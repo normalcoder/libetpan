@@ -2,8 +2,8 @@
 
 case "$ACTION" in
 "clean")
-    rm -f configured.lock
-    rm -Rf build
+#    rm -f configured.lock
+#    rm -Rf build
     rm -Rf ../lib
 ;;
 *)
