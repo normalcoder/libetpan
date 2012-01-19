@@ -834,16 +834,6 @@
 		C6F9EDBE105339EA0059C3BA /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C6F9EDBD105339EA0059C3BA /* libcrypto.dylib */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		BC16AE4814C74185005924F9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BC16AE3314C72FDA005924F9;
-			remoteInfo = configure;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		C6DC649E10829CEB00FA050B /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -2571,23 +2561,6 @@
 		};
 /* End PBXHeadersBuildPhase section */
 
-/* Begin PBXLegacyTarget section */
-		BC16AE3314C72FDA005924F9 /* configure */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION)";
-			buildConfigurationList = BC16AE3614C72FDA005924F9 /* Build configuration list for PBXLegacyTarget "configure" */;
-			buildPhases = (
-			);
-			buildToolPath = ./xcode_configure.sh;
-			buildWorkingDirectory = "";
-			dependencies = (
-			);
-			name = configure;
-			passBuildSettingsInEnvironment = 1;
-			productName = configure;
-		};
-/* End PBXLegacyTarget section */
-
 /* Begin PBXNativeTarget section */
 		8DC2EF4F0486A6940098B216 /* libetpan */ = {
 			isa = PBXNativeTarget;
@@ -2619,7 +2592,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				BC16AE4914C74185005924F9 /* PBXTargetDependency */,
 			);
 			name = "static libetpan ios";
 			productName = "static libetpan";
@@ -2666,7 +2638,6 @@
 				8DC2EF4F0486A6940098B216 /* libetpan */,
 				C69AB10910546FE500F32FBD /* static libetpan */,
 				BC16AD7414C72B23005924F9 /* static libetpan ios */,
-				BC16AE3314C72FDA005924F9 /* configure */,
 			);
 		};
 /* End PBXProject section */
@@ -2693,7 +2664,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = ./xcode_ln_product.sh;
+			shellScript = ../../xcode_ln_product.sh;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3201,14 +3172,6 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		BC16AE4914C74185005924F9 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BC16AE3314C72FDA005924F9 /* configure */;
-			targetProxy = BC16AE4814C74185005924F9 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
 		1DEB91AE08733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -3292,10 +3255,9 @@
 				HEADER_SEARCH_PATHS = (
 					"$(CYRUS_SASL_DIR)/include",
 					"$(OPENSSL_DIR)/include",
-					"$(SRCROOT)/include",
+					"$(SRCROOT)/../include",
 				);
 				INSTALL_PATH = /usr/local/lib;
-				LIB_PRODUCT_DIR = "$(SRCROOT)/../lib";
 				PREBINDING = NO;
 				PRODUCT_NAME = etpan;
 				SDKROOT = iphoneos;
@@ -3314,28 +3276,13 @@
 				HEADER_SEARCH_PATHS = (
 					"$(CYRUS_SASL_DIR)/include",
 					"$(OPENSSL_DIR)/include",
-					"$(SRCROOT)/include",
+					"$(SRCROOT)/../include",
 				);
 				INSTALL_PATH = /usr/local/lib;
-				LIB_PRODUCT_DIR = "$(SRCROOT)/../lib";
 				PREBINDING = NO;
 				PRODUCT_NAME = etpan;
 				SDKROOT = iphoneos;
 				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
-		BC16AE3414C72FDA005924F9 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CFG_FLAGS = "--with-expat --with-curl";
-			};
-			name = Debug;
-		};
-		BC16AE3514C72FDA005924F9 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CFG_FLAGS = "--with-expat --with-curl";
 			};
 			name = Release;
 		};
@@ -3395,15 +3342,6 @@
 			buildConfigurations = (
 				BC16AE1A14C72B23005924F9 /* Debug */,
 				BC16AE1B14C72B23005924F9 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		BC16AE3614C72FDA005924F9 /* Build configuration list for PBXLegacyTarget "configure" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BC16AE3414C72FDA005924F9 /* Debug */,
-				BC16AE3514C72FDA005924F9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
