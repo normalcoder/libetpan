@@ -23,7 +23,6 @@
 /autom4te.cache/
 /build-windows/Makefile
 /build-windows/Makefile.in
-/config.h
 /config.log
 /config.status
 /configure
@@ -32,10 +31,8 @@
 /doc/Makefile.in
 /include/Makefile
 /include/Makefile.in
-/include/libetpan/
 /install-sh
 /libetpan-config
-/libetpan-config.h
 /libtool
 /missing
 /src/Makefile

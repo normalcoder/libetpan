@@ -3256,6 +3256,7 @@
 					"$(CYRUS_SASL_DIR)/include",
 					"$(OPENSSL_DIR)/include",
 					"$(SRCROOT)/../include",
+					"$(SRCROOT)/..",
 				);
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
@@ -3277,6 +3278,7 @@
 					"$(CYRUS_SASL_DIR)/include",
 					"$(OPENSSL_DIR)/include",
 					"$(SRCROOT)/../include",
+					"$(SRCROOT)/..",
 				);
 				INSTALL_PATH = /usr/local/lib;
 				PREBINDING = NO;
