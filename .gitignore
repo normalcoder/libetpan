@@ -2,8 +2,12 @@
 *.lo
 *.o
 *.la
+*.DS_Store
 .deps
 .libs
+
+*project.xcworkspace/
+*xcuserdata/
 
 /build-mac/build
 /build-mac/include
