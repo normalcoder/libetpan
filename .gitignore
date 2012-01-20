@@ -97,7 +97,6 @@
 /src/low-level/smtp/Makefile.in
 /src/main/Makefile
 /src/main/Makefile.in
-/src/main/libetpan_version.h
 /src/versioninfo.rc
 /src/windows/Makefile
 /src/windows/Makefile.in
