@@ -124,6 +124,10 @@ struct mailstorage {
   clist * sto_shared_folders; /* list of (struct mailfolder *) */
   
   void * sto_user_data;
+
+  // patch for OAuth authentication
+  int (* sess_oauth_login)(mailsession * session, const char * user, const char * pass);
+  char * base64String;
 };
 
 

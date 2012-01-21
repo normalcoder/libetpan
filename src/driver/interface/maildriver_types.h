@@ -564,6 +564,9 @@ struct mailsession_driver {
 struct mailsession {
   void * sess_data;
   mailsession_driver * sess_driver;
+
+  // patch for OAuth authentication
+  char * base64String;
 };
 
 

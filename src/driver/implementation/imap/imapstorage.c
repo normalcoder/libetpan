@@ -384,6 +384,12 @@ static int imap_connect(struct mailstorage * storage,
     goto err;
   }
 
+  // patch for OAuth authentication
+  if (storage->sess_oauth_login) {
+      session->sess_driver->sess_login = storage->sess_oauth_login;
+      session->base64String = storage->base64String;
+  }
+
   r = mailstorage_generic_auth_sasl(session, r,
       imap_storage->imap_sasl.sasl_auth_type,
       imap_storage->imap_sasl.sasl_server_fqdn,
