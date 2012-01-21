@@ -61,6 +61,8 @@ extern "C" {
 
 struct mailimap_set_item * mailimap_set_item_new_single(uint32_t indx);
 
+struct mailimap_set_item * mailimap_set_item_new_single_64(uint64_t indx);
+    
 /*
   this function creates a new set with one set item
  */
@@ -68,18 +70,25 @@ struct mailimap_set_item * mailimap_set_item_new_single(uint32_t indx);
 struct mailimap_set *
 mailimap_set_new_single_item(struct mailimap_set_item * item);
 
+struct mailimap_set *
+mailimap_set_new_single_item_64(struct mailimap_set_item_64 * item);
+    
 /*
   this function creates a set with a single interval
 */
 
 struct mailimap_set * mailimap_set_new_interval(uint32_t first, uint32_t last);
 
+struct mailimap_set * mailimap_set_new_interval_64(uint64_t first, uint64_t last);
+    
 /*
   this function creates a set with a single message
 */
 
 struct mailimap_set * mailimap_set_new_single(uint32_t indx);
 
+struct mailimap_set * mailimap_set_new_single_64(uint64_t indx);
+    
 /*
   this function creates an empty set of messages
 */
@@ -96,6 +105,9 @@ struct mailimap_set * mailimap_set_new_empty(void);
 int mailimap_set_add(struct mailimap_set * set,
 		struct mailimap_set_item * set_item);
 
+int mailimap_set_add_64(struct mailimap_set * set,
+                        struct mailimap_set_item_64 * set_item);
+    
 /*
   this function adds an interval to the set
 
@@ -106,6 +118,9 @@ int mailimap_set_add(struct mailimap_set * set,
 int mailimap_set_add_interval(struct mailimap_set * set,
 		uint32_t first, uint32_t last);
 
+int mailimap_set_add_interval_64(struct mailimap_set * set,
+                                 uint64_t first, uint64_t last);
+    
 /*
   this function adds a single message to the set
 
@@ -115,6 +130,9 @@ int mailimap_set_add_interval(struct mailimap_set * set,
 
 int mailimap_set_add_single(struct mailimap_set * set,
 			 uint32_t indx);
+
+int mailimap_set_add_single_64(struct mailimap_set * set,
+                               uint64_t indx);
 
 /*
   this function creates a mailimap_section structure to request
@@ -284,6 +302,14 @@ mailimap_fetch_att_new_bodystructure(void);
 
 struct mailimap_fetch_att *
 mailimap_fetch_att_new_uid(void);
+
+/*
+ this function creates a mailimap_fetch_att structure to request
+ gmail thread identifier
+*/
+
+struct mailimap_fetch_att *
+mailimap_fetch_att_new_x_gm_thrid(void);
 
 /*
   this function creates a mailimap_fetch_att structure to request
@@ -658,6 +684,14 @@ mailimap_search_key_new_multiple(clist * sk_multiple);
 
 struct mailimap_search_key *
 mailimap_search_key_new_multiple_empty(void);
+
+/*
+ this function creates a condition structure to match messages with gmail
+ thread identifier
+*/
+    
+struct mailimap_search_key *
+mailimap_search_key_new_x_gm_thread(struct mailimap_set * sk_x_gm_thread);
 
 /*
   this function adds a condition to the condition list

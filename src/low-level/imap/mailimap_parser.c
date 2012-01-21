@@ -7690,11 +7690,46 @@ mailimap_msg_att_dynamic_parse(mailstream * fd, MMAPString * buffer,
 }
 
 /*
+ "X-GM-THRID" SP uniqueid64
+ */
+
+static int
+mailimap_msg_att_x_gm_thrid_parse(mailstream * fd, MMAPString * buffer,
+                                  size_t * indx,
+                                  uint64_t * result)
+{
+    size_t cur_token;
+    uint64_t x_gm_thrid;
+    int r;
+    
+    cur_token = * indx;
+    
+    r = mailimap_token_case_insensitive_parse(fd, buffer, &cur_token, "X-GM-THRID");
+    if (r != MAILIMAP_NO_ERROR)
+        return r;
+    
+    r = mailimap_space_parse(fd, buffer, &cur_token);
+    if (r != MAILIMAP_NO_ERROR)
+        return r;
+    
+    r = mailimap_uniqueid64_parse(fd, buffer, &cur_token, &x_gm_thrid);
+    if (r != MAILIMAP_NO_ERROR)
+        return r;
+    
+    * indx = cur_token;
+    * result = x_gm_thrid;
+    
+    return MAILIMAP_NO_ERROR;
+}
+
+/*
    msg-att-static  = "ENVELOPE" SP envelope / "INTERNALDATE" SP date-time /
                      "RFC822" [".HEADER" / ".TEXT"] SP nstring /
                      "RFC822.SIZE" SP number / "BODY" ["STRUCTURE"] SP body /
                      "BODY" section ["<" number ">"] SP nstring /
                      "UID" SP uniqueid
+ 
+                     / "X-GM-THRID" SP uniqueid64   ; gmail extension
                        ; MUST NOT change for a message
 */
 
@@ -8226,6 +8261,10 @@ mailimap_msg_att_static_parse_progress(mailstream * fd, MMAPString * buffer,
   struct mailimap_body * body;
   struct mailimap_msg_att_body_section * body_section;
   uint32_t uid;
+
+  /* gmail extension */
+  uint64_t x_gm_thrid;
+
   struct mailimap_msg_att_static * msg_att_static;
   int type;
   int r;
@@ -8245,6 +8284,7 @@ mailimap_msg_att_static_parse_progress(mailstream * fd, MMAPString * buffer,
   body = NULL;
   body_section = NULL;
   uid = 0;
+  x_gm_thrid = 0;
 
   type = MAILIMAP_MSG_ATT_ERROR; /* XXX - removes a gcc warning */
 
@@ -8324,6 +8364,14 @@ mailimap_msg_att_static_parse_progress(mailstream * fd, MMAPString * buffer,
       type = MAILIMAP_MSG_ATT_UID;
   }
 
+  /* gmail extension */
+  if (r == MAILIMAP_ERROR_PARSE) {
+      r = mailimap_msg_att_x_gm_thrid_parse(fd, buffer, &cur_token,
+                                            &x_gm_thrid);
+      if (r == MAILIMAP_NO_ERROR)
+          type = MAILIMAP_MSG_ATT_X_GM_THRID;
+  }
+
   if (r != MAILIMAP_NO_ERROR) {
     res = r;
     goto err;
@@ -8333,7 +8381,7 @@ mailimap_msg_att_static_parse_progress(mailstream * fd, MMAPString * buffer,
 					       rfc822, rfc822_header,
 					       rfc822_text, length,
 					       rfc822_size, bodystructure,
-					       body, body_section, uid);
+					       body, body_section, uid, x_gm_thrid);
   if (msg_att_static == NULL) {
     res = MAILIMAP_ERROR_MEMORY;
     goto free;
@@ -8482,6 +8530,52 @@ mailimap_number_parse(mailstream * fd, MMAPString * buffer,
 }
 
 /*
+ number          = 1*DIGIT
+ ; Unsigned 64-bit integer
+ ; (0 <= n < 2^64 - 1)
+ */
+
+int
+mailimap_number64_parse(mailstream * fd, MMAPString * buffer,
+                        size_t * indx, uint64_t * result)
+{
+    size_t cur_token;
+    int digit;
+    uint64_t number;
+    int parsed;
+    int r;
+    
+    cur_token = * indx;
+    parsed = FALSE;
+    
+#ifdef UNSTRICT_SYNTAX
+    mailimap_space_parse(fd, buffer, &cur_token);
+#endif
+    
+    number = 0;
+    while (1) {
+        r = mailimap_digit_parse(fd, buffer, &cur_token, &digit);
+        if (r == MAILIMAP_ERROR_PARSE)
+            break;
+        else if (r == MAILIMAP_NO_ERROR) {
+            number *= 10;
+            number += digit;
+            parsed = TRUE;
+        }
+        else
+            return r;
+    }
+    
+    if (!parsed)
+        return MAILIMAP_ERROR_PARSE;
+    
+    * result = number;
+    * indx = cur_token;
+    
+    return MAILIMAP_NO_ERROR;
+}
+
+/*
    nz-number       = digit-nz *DIGIT
                        ; Non-zero unsigned 32-bit integer
                        ; (0 < n < 4,294,967,296)
@@ -8538,6 +8632,65 @@ mailimap_nz_number_parse(mailstream * fd, MMAPString * buffer,
   * indx = cur_token;
 
   return MAILIMAP_NO_ERROR;
+}
+
+/*
+ nz-number64       = digit-nz *DIGIT
+ ; Non-zero unsigned 64-bit integer
+ ; (0 < n < 2^64 - 1)
+ */
+
+int
+mailimap_nz_number64_parse(mailstream * fd, MMAPString * buffer,
+                           size_t * indx, uint64_t * result)
+{
+#ifdef UNSTRICT_SYNTAX
+    size_t cur_token;
+    uint64_t number;
+    int r;
+    
+    cur_token = * indx;
+    
+    r = mailimap_number64_parse(fd, buffer, &cur_token, &number);
+    if (r != MAILIMAP_NO_ERROR)
+        return r;
+    
+#if 0 // don't fail if zero
+    if (number == 0)
+        return MAILIMAP_ERROR_PARSE;
+#endif
+    
+#else
+    size_t cur_token;
+    int digit;
+    uint64_t number;
+    int r;
+    
+    cur_token = * indx;
+    
+    r = mailimap_digit_nz_parse(fd, buffer, &cur_token, &digit);
+    if (r != MAILIMAP_NO_ERROR)
+        return r;
+    
+    number = digit;
+    
+    while (1) {
+        r = mailimap_digit_parse(fd, buffer, &cur_token, &digit);
+        if (r == MAILIMAP_ERROR_PARSE)
+            break;
+        else if (r == MAILIMAP_NO_ERROR) {
+            number *= 10;
+            number += (guint32) digit;
+        }
+        else
+            return r;
+    }
+#endif
+    
+    * result = number;
+    * indx = cur_token;
+    
+    return MAILIMAP_NO_ERROR;
 }
 
 /*
@@ -10742,6 +10895,17 @@ int mailimap_uniqueid_parse(mailstream * fd, MMAPString * buffer,
     size_t * indx, uint32_t * result)
 {
   return mailimap_nz_number_parse(fd, buffer, indx, result);
+}
+
+/*
+ uniqueid64        = nz-number64
+ ; Strictly ascending
+ */
+
+int mailimap_uniqueid64_parse(mailstream * fd, MMAPString * buffer,
+                              size_t * indx, uint64_t * result)
+{
+    return mailimap_nz_number64_parse(fd, buffer, indx, result);
 }
 
 /*

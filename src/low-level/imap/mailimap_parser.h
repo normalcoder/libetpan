@@ -137,10 +137,16 @@ mailimap_astring_parse(mailstream * fd, MMAPString * buffer,
 int
 mailimap_number_parse(mailstream * fd, MMAPString * buffer,
 		      size_t * indx, uint32_t * result);
+int
+mailimap_number64_parse(mailstream * fd, MMAPString * buffer,
+                        size_t * indx, uint64_t * result);
 
 int
 mailimap_nz_number_parse(mailstream * fd, MMAPString * buffer,
 			 size_t * indx, uint32_t * result);
+int
+mailimap_nz_number64_parse(mailstream * fd, MMAPString * buffer,
+                           size_t * indx, uint64_t * result);
 
 int
 mailimap_struct_list_parse(mailstream * fd, MMAPString * buffer,
@@ -154,6 +160,9 @@ mailimap_struct_list_parse(mailstream * fd, MMAPString * buffer,
 int mailimap_uniqueid_parse(mailstream * fd, MMAPString * buffer,
     size_t * indx, uint32_t * result);
 
+int mailimap_uniqueid64_parse(mailstream * fd, MMAPString * buffer,
+                              size_t * indx, uint64_t * result);
+    
 int mailimap_colon_parse(mailstream * fd, MMAPString * buffer,
     size_t * indx);
 

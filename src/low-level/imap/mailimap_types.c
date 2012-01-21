@@ -1772,7 +1772,10 @@ mailimap_msg_att_static_new(int att_type, struct mailimap_envelope * att_env,
     struct mailimap_body * att_bodystructure,
     struct mailimap_body * att_body,
     struct mailimap_msg_att_body_section * att_body_section,
-    uint32_t att_uid)
+    uint32_t att_uid,
+
+    /* gmail extension */
+    uint64_t att_x_gm_thrid)
 {
   struct mailimap_msg_att_static * item;
 
@@ -1814,6 +1817,9 @@ mailimap_msg_att_static_new(int att_type, struct mailimap_envelope * att_env,
     break;
   case MAILIMAP_MSG_ATT_UID:
     item->att_data.att_uid = att_uid;
+    break;
+  case MAILIMAP_MSG_ATT_X_GM_THRID:
+    item->att_data.att_x_gm_thrid = att_x_gm_thrid;
     break;
   }
 
@@ -2517,6 +2523,26 @@ void mailimap_set_item_free(struct mailimap_set_item * set_item)
   free(set_item);
 }
 
+struct mailimap_set_item_64 *
+mailimap_set_item_64_new(uint64_t set_first, uint64_t set_last)
+{
+    struct mailimap_set_item_64 * item;
+    
+    item = malloc(sizeof(* item));
+    if (item == NULL)
+        return NULL;
+    
+    item->set_first = set_first;
+    item->set_last = set_last;
+    
+    return item;
+}
+
+void mailimap_set_item_64_free(struct mailimap_set_item_64 * set_item)
+{
+    free(set_item);
+}
+
 struct mailimap_set * mailimap_set_new(clist * set_list)
 {
   struct mailimap_set * set;
@@ -2673,7 +2699,9 @@ mailimap_search_key_new(int sk_type,
     struct mailimap_date * sk_senton,
     struct mailimap_date * sk_sentsince,
     uint32_t sk_smaller, struct mailimap_set * sk_uid,
-    struct mailimap_set * sk_set, clist * sk_multiple)
+    struct mailimap_set * sk_set, clist * sk_multiple,
+    /* gmail extension */
+    struct mailimap_set * sk_x_gm_thrid)
 {
   struct mailimap_search_key * key;
 
@@ -2754,6 +2782,9 @@ mailimap_search_key_new(int sk_type,
   case MAILIMAP_SEARCH_KEY_MULTIPLE:
     key->sk_data.sk_multiple = sk_multiple;
     break;
+  case MAILIMAP_SEARCH_KEY_X_GM_THRID:
+    key->sk_data.sk_x_gm_thrid = sk_x_gm_thrid;
+    break;
   }
   return key;
 }
@@ -2828,6 +2859,9 @@ void mailimap_search_key_free(struct mailimap_search_key * key)
     clist_foreach(key->sk_data.sk_multiple,
         (clist_func) mailimap_search_key_free, NULL);
     clist_free(key->sk_data.sk_multiple);
+    break;
+  case MAILIMAP_SEARCH_KEY_X_GM_THRID:
+    mailimap_set_free(key->sk_data.sk_x_gm_thrid);
     break;
   }
   

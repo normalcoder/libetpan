@@ -184,6 +184,8 @@ int mailimap_astring_send(mailstream * fd, const char * astring);
 int mailimap_set_send(mailstream * fd,
     struct mailimap_set * set);
 
+int mailimap_set_64_send(mailstream * fd,
+                         struct mailimap_set * set);
 #ifdef __cplusplus
 }
 #endif

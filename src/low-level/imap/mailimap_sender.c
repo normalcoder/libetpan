@@ -1193,6 +1193,9 @@ static int mailimap_fetch_att_send(mailstream * fd,
   case MAILIMAP_FETCH_ATT_UID:
     return mailimap_token_send(fd, "UID");
 
+  case MAILIMAP_FETCH_ATT_X_GM_THRID:
+    return mailimap_token_send(fd, "X-GM-THRID");
+
   case MAILIMAP_FETCH_ATT_BODY_SECTION:
 
     r = mailimap_token_send(fd, "BODY");
@@ -1708,6 +1711,23 @@ static int mailimap_number_send(mailstream * fd, uint32_t number)
   return MAILIMAP_NO_ERROR;
 }
 
+static int mailimap_number_64_send(mailstream * fd, uint64_t number)
+{
+    int r;
+    
+    if (number / 10 != 0) {
+        r = mailimap_number_64_send(fd, number / 10);
+        if (r != MAILIMAP_NO_ERROR)
+            return r;
+    }
+    
+    r = mailimap_digit_send(fd, number % 10);
+    if (r != MAILIMAP_NO_ERROR)
+        return r;
+    
+    return MAILIMAP_NO_ERROR;
+}
+
 /*
 =>   password        = astring
 */
@@ -1915,6 +1935,8 @@ mailimap_uid_search_send(mailstream * fd, const char * charset,
                      "SENTBEFORE" SP date / "SENTON" SP date /
                      "SENTSINCE" SP date / "SMALLER" SP number /
                      "UID" SP set / "UNDRAFT" / set /
+ 
+                     "X-GM-THRID" SP set /               ; gmail extension
                      "(" search-key *(SP search-key) ")"
 */
 
@@ -2231,6 +2253,18 @@ static int mailimap_search_key_send(mailstream * fd,
       return r;
     return MAILIMAP_NO_ERROR;
 
+  case MAILIMAP_SEARCH_KEY_X_GM_THRID:
+    r = mailimap_token_send(fd, "X-GM-THRID");
+    if (r != MAILIMAP_NO_ERROR)
+       return r;
+    r = mailimap_space_send(fd);
+    if (r != MAILIMAP_NO_ERROR)
+       return r;
+    r = mailimap_set_64_send(fd, key->sk_data.sk_x_gm_thrid);
+    if (r != MAILIMAP_NO_ERROR)
+       return r;
+    return MAILIMAP_NO_ERROR;
+
   case MAILIMAP_SEARCH_KEY_UNDRAFT:
     return mailimap_token_send(fd, "UNDRAFT");
 
@@ -2465,6 +2499,15 @@ mailimap_sequence_num_send(mailstream * fd, uint32_t sequence_num)
     return mailimap_number_send(fd, sequence_num);
 }
 
+static int
+mailimap_sequence_num_64_send(mailstream * fd, uint64_t sequence_num)
+{
+    if (sequence_num == 0)
+        return mailimap_char_send(fd, '*');
+    else
+        return mailimap_number_64_send(fd, sequence_num);
+}
+
 /*
 =>   set             = sequence-num / (sequence-num ":" sequence-num) /
                      (set "," set)
@@ -2499,11 +2542,39 @@ static int mailimap_set_item_send(mailstream * fd,
   }
 }
 
+static int mailimap_set_item_64_send(mailstream * fd,
+                                     struct mailimap_set_item_64 * item)
+{
+    int r;
+    
+    if (item->set_first == item->set_last)
+        return mailimap_sequence_num_64_send(fd, item->set_first);
+    else {
+        r = mailimap_sequence_num_64_send(fd, item->set_first);
+        if (r != MAILIMAP_NO_ERROR)
+            return r;
+        r = mailimap_char_send(fd, ':');
+        if (r != MAILIMAP_NO_ERROR)
+            return r;
+        r = mailimap_sequence_num_64_send(fd, item->set_last);
+        if (r != MAILIMAP_NO_ERROR)
+            return r;
+        return MAILIMAP_NO_ERROR;
+    }
+}
+
 int mailimap_set_send(mailstream * fd,
     struct mailimap_set * set)
 {
   return mailimap_struct_list_send(fd, set->set_list, ',',
       (mailimap_struct_sender *) mailimap_set_item_send);
+}
+
+int mailimap_set_64_send(mailstream * fd,
+                         struct mailimap_set * set)
+{
+    return mailimap_struct_list_send(fd, set->set_list, ',',
+                                     (mailimap_struct_sender *) mailimap_set_item_64_send);
 }
 
 /*

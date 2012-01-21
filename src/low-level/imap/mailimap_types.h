@@ -337,6 +337,8 @@
                      "RFC822.SIZE" SP number / "BODY" ["STRUCTURE"] SP body /
                      "BODY" section ["<" number ">"] SP nstring /
                      "UID" SP uniqueid
+ 
+                     / "X-GM-THRID" SP uniqueid64          ; gmail extension
                        ; MUST NOT change for a message
 
    nil             = "NIL"
@@ -416,6 +418,8 @@
                      "SENTSINCE" SP date / "SMALLER" SP number /
                      "UID" SP set / "UNDRAFT" / set /
                      "(" search-key *(SP search-key) ")"
+ 
+                     / "X-GM-THRID" SP set ; gmail extension
 
    section         = "[" [section-spec] "]"
 
@@ -495,6 +499,16 @@
                        ; Universal Time).  Subtracting the timezone
                        ; from the given time will give the UT form.
                        ; The Universal Time zone is "+0000".
+ 
+ Gmail extension tokens
+ 
+ nz-number64       = digit-nz *DIGIT
+ ; Non-zero unsigned 32-bit integer
+ ; (0 < n < 4,294,967,296)
+ 
+ uniqueid64        = nz-number64
+ ; Strictly ascending
+ 
 */
 
 
@@ -1955,7 +1969,10 @@ enum {
   MAILIMAP_MSG_ATT_BODYSTRUCTURE, /* this is the MIME description of the
                                      message with additional information */
   MAILIMAP_MSG_ATT_BODY_SECTION,  /* this is a MIME part content */
-  MAILIMAP_MSG_ATT_UID            /* this is the message unique identifier */
+  MAILIMAP_MSG_ATT_UID,            /* this is the message unique identifier */
+
+  /* gmail extension */
+  MAILIMAP_MSG_ATT_X_GM_THRID,    /* this is the thread unique identifier */
 };
 
 /*
@@ -1967,6 +1984,7 @@ enum {
     MAILIMAP_MSG_ATT_RFC822_TEXT, MAILIMAP_MSG_ATT_RFC822_SIZE,
     MAILIMAP_MSG_ATT_BODY, MAILIMAP_MSG_ATT_BODYSTRUCTURE,
     MAILIMAP_MSG_ATT_BODY_SECTION, MAILIMAP_MSG_ATT_UID
+    , MAILIMAP_MSG_ATT_X_GM_THRID     ; gmail extension
 
   - env is the headers parsed by the server if type is
     MAILIMAP_MSG_ATT_ENVELOPE
@@ -2017,6 +2035,9 @@ struct mailimap_msg_att_static {
     struct mailimap_body * att_body;          /* can be NULL */
     struct mailimap_msg_att_body_section * att_body_section; /* can be NULL */
     uint32_t att_uid;
+
+    /* gmail extension */
+    uint64_t att_x_gm_thrid;
   } att_data;
 };
 
@@ -2031,7 +2052,10 @@ mailimap_msg_att_static_new(int att_type, struct mailimap_envelope * att_env,
     struct mailimap_body * att_bodystructure,
     struct mailimap_body * att_body,
     struct mailimap_msg_att_body_section * att_body_section,
-    uint32_t att_uid);
+    uint32_t att_uid,
+
+    /* gmail extension */
+    uint64_t att_x_gm_thrid);
 
 void
 mailimap_msg_att_static_free(struct mailimap_msg_att_static * item);
@@ -2597,6 +2621,11 @@ struct mailimap_set_item {
   uint32_t set_last;
 };
 
+struct mailimap_set_item_64 {
+  uint64_t set_first;
+  uint64_t set_last;
+};
+
 LIBETPAN_EXPORT
 struct mailimap_set_item *
 mailimap_set_item_new(uint32_t set_first, uint32_t set_last);
@@ -2604,7 +2633,12 @@ mailimap_set_item_new(uint32_t set_first, uint32_t set_last);
 LIBETPAN_EXPORT
 void mailimap_set_item_free(struct mailimap_set_item * set_item);
 
+LIBETPAN_EXPORT
+struct mailimap_set_item_64 *
+mailimap_set_item_64_new(uint64_t set_first, uint64_t set_last);
 
+LIBETPAN_EXPORT
+void mailimap_set_item_64_free(struct mailimap_set_item_64 * set_item);
 
 /*
   set is a list of message sets
@@ -2666,7 +2700,10 @@ enum {
   MAILIMAP_FETCH_ATT_BODY_SECTION,      /* to fetch a given part */
   MAILIMAP_FETCH_ATT_BODY_PEEK_SECTION, /* to fetch a given part without
                                            marking the message as read */
-  MAILIMAP_FETCH_ATT_EXTENSION
+  MAILIMAP_FETCH_ATT_EXTENSION,
+
+  /* gmail extension */
+  MAILIMAP_FETCH_ATT_X_GM_THRID,      /* to fetch the unique thread identifier */
 };
 
 
@@ -2681,6 +2718,8 @@ enum {
     MAILIMAP_FETCH_ATT_BODYSTRUCTURE, MAILIMAP_FETCH_ATT_UID,
     MAILIMAP_FETCH_ATT_BODY_SECTION, MAILIMAP_FETCH_ATT_BODY_PEEK_SECTION,
     MAILIMAP_FETCH_ATT_EXTENSION
+
+    , MAILIMAP_FETCH_ATT_X_GM_THRID     ; gmail extension
 
   - section is the location of the part to fetch if type is
     MAILIMAP_FETCH_ATT_BODY_SECTION or MAILIMAP_FETCH_ATT_BODY_PEEK_SECTION
@@ -2847,8 +2886,11 @@ enum {
   MAILIMAP_SEARCH_KEY_SET,        /* messages whose number (or unique
                                      identifiers in case of UID SEARCH) are
                                      in the given range */
-  MAILIMAP_SEARCH_KEY_MULTIPLE    /* the boolean operator between the
+  MAILIMAP_SEARCH_KEY_MULTIPLE,   /* the boolean operator between the
                                      conditions is AND */
+
+  MAILIMAP_SEARCH_KEY_X_GM_THRID, /* messages whose thread identifiers are
+                                     in the given range */
 };
 
 /*
@@ -2916,6 +2958,8 @@ enum {
   - set is a set of messages when type is MAILIMAP_SEARCH_KEY_SET
 
   - multiple is a set of message when type is MAILIMAP_SEARCH_KEY_MULTIPLE
+ 
+  - x_gm_thrid is a set of messages when type is MAILIMAP_SEARCH_KEY_X_GM_THRID ; gmail extension
 */
 
 struct mailimap_search_key {
@@ -2950,6 +2994,7 @@ struct mailimap_search_key {
     struct mailimap_set * sk_uid;
     struct mailimap_set * sk_set;
     clist * sk_multiple; /* list of (struct mailimap_search_key *) */
+    struct mailimap_set * sk_x_gm_thrid; /* gmail extension */
   } sk_data;
 };
 
@@ -2969,7 +3014,9 @@ mailimap_search_key_new(int sk_type,
     struct mailimap_date * sk_senton,
     struct mailimap_date * sk_sentsince,
     uint32_t sk_smaller, struct mailimap_set * sk_uid,
-    struct mailimap_set * sk_set, clist * sk_multiple);
+    struct mailimap_set * sk_set, clist * sk_multiple,
+    /* gmail extension */
+    struct mailimap_set * sk_x_gm_thrid);
 
 
 LIBETPAN_EXPORT
