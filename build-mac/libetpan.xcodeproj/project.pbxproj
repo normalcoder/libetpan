@@ -2587,7 +2587,6 @@
 			buildPhases = (
 				BC16AD7714C72B23005924F9 /* Sources */,
 				BC16AE1814C72B23005924F9 /* Frameworks */,
-				BC16AE6014C74DEE005924F9 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -2651,22 +2650,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		BC16AE6014C74DEE005924F9 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = ../../xcode_ln_product.sh;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8DC2EF540486A6940098B216 /* Sources */ = {
@@ -3248,6 +3231,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = NO;
+				CYRUS_SASL_DIR = "$(SRCROOT)/../../cyrus-sasl";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
@@ -3259,6 +3243,7 @@
 					"$(SRCROOT)/..",
 				);
 				INSTALL_PATH = /usr/local/lib;
+				OPENSSL_DIR = "$(SRCROOT)/../../openssl";
 				PREBINDING = NO;
 				PRODUCT_NAME = etpan;
 				SDKROOT = iphoneos;
@@ -3271,6 +3256,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = YES;
+				CYRUS_SASL_DIR = "$(SRCROOT)/../../cyrus-sasl";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
@@ -3281,6 +3267,7 @@
 					"$(SRCROOT)/..",
 				);
 				INSTALL_PATH = /usr/local/lib;
+				OPENSSL_DIR = "$(SRCROOT)/../../openssl";
 				PREBINDING = NO;
 				PRODUCT_NAME = etpan;
 				SDKROOT = iphoneos;
